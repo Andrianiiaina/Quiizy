@@ -1,0 +1,15 @@
+# Surcharges de développement — appliquées automatiquement par docker compose
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    # En dev, on bypasse entrypoint.sh (permissions du volume) et on utilise --reload
+    entrypoint: ["/bin/sh", "-c"]
+    command: "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      DEBUG: "true"
+
+  postgres:
+    ports:
+      - "5432:5432"   # expose postgres pour les outils DB locaux (DBeaver, psql, etc.)
