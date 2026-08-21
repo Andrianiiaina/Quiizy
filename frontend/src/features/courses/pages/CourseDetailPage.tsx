@@ -1,11 +1,12 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useState } from 'react'
 import { useCourse, useDeleteCourse, usePublishCourse, useArchiveCourse } from '../hooks/useCourses'
 import { CourseStatusBadge } from '../components/CourseStatusBadge'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useCourseContents, useDeleteContent, useReorderContents } from '@/features/contents/hooks/useContents'
 import { ContentCard } from '@/features/contents/components/ContentCard'
 import { AddContentForm } from '@/features/contents/components/AddContentForm'
-import type { CourseContent } from '@/types/content'
+import { useGenerateQuiz, useGenerationJob, useCourseQuiz } from '@/features/lms/hooks'
 
 export function CourseDetailPage() {
   const { id = '' } = useParams<{ id: string }>()
@@ -18,6 +19,10 @@ export function CourseDetailPage() {
   const { mutateAsync: archiveCourse, isPending: isArchiving } = useArchiveCourse(id)
   const { mutateAsync: deleteContent } = useDeleteContent(id)
   const { mutateAsync: reorder } = useReorderContents(id)
+  const { mutateAsync: generateQuiz, isPending: isGenerating } = useGenerateQuiz(id)
+  const [jobId, setJobId] = useState<string | null>(null)
+  const { data: job } = useGenerationJob(jobId)
+  const { data: activeQuiz } = useCourseQuiz(id)
 
   if (isLoading) {
     return (
@@ -37,7 +42,7 @@ export function CourseDetailPage() {
     navigate('/courses', { replace: true })
   }
 
-  const handleMoveUp = async (content: CourseContent, index: number) => {
+  const handleMoveUp = async (index: number) => {
     if (index === 0) return
     const swapped = [...contents]
     const updated = swapped.map((c, i) => {
@@ -48,7 +53,7 @@ export function CourseDetailPage() {
     await reorder(updated)
   }
 
-  const handleMoveDown = async (content: CourseContent, index: number) => {
+  const handleMoveDown = async (index: number) => {
     if (index === contents.length - 1) return
     const updated = contents.map((c, i) => {
       if (i === index) return { id: c.id, position: contents[index + 1].position }
@@ -118,8 +123,8 @@ export function CourseDetailPage() {
             <ContentCard
               key={c.id} content={c} canEdit={canEdit}
               isFirst={i === 0} isLast={i === contents.length - 1}
-              onMoveUp={() => handleMoveUp(c, i)}
-              onMoveDown={() => handleMoveDown(c, i)}
+              onMoveUp={() => handleMoveUp(i)}
+              onMoveDown={() => handleMoveDown(i)}
               onDelete={() => deleteContent(c.id)}
             />
           ))}
@@ -131,6 +136,29 @@ export function CourseDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Quiz */}
+      {canEdit && (
+        <div className="rounded-lg border bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-gray-900">Quiz automatique</h2>
+              {activeQuiz && <p className="text-sm text-gray-500">Version {activeQuiz.version} — {activeQuiz.question_count} questions</p>}
+              {job && job.status !== 'COMPLETED' && job.status !== 'FAILED' && (
+                <p className="text-sm text-blue-600">Génération en cours…</p>
+              )}
+              {job?.status === 'FAILED' && <p className="text-sm text-red-600">{job.error_message}</p>}
+            </div>
+            <button
+              onClick={async () => { const j = await generateQuiz(); setJobId((j as { id: string }).id) }}
+              disabled={isGenerating || job?.status === 'PROCESSING' || job?.status === 'PENDING'}
+              className="rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+            >
+              {isGenerating || job?.status === 'PROCESSING' ? 'Génération…' : activeQuiz ? 'Régénérer' : 'Générer le quiz'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <p className="text-xs text-gray-400">
         Modifié le {new Date(course.updated_at).toLocaleDateString('fr-FR')}

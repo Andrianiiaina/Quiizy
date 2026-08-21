@@ -12,8 +12,10 @@ from app.modules.categories.models import Category        # noqa: F401
 from app.modules.courses.models import Course             # noqa: F401
 from app.modules.files.models import FileAsset            # noqa: F401
 from app.modules.contents.models import CourseContent     # noqa: F401
-
-# Importer les nouveaux models ici au fur et à mesure :
+from app.modules.learning_paths.models import LearningPath, LearningPathCourse  # noqa: F401
+from app.modules.assignments.models import Assignment, Enrollment  # noqa: F401
+from app.modules.progress.models import ContentProgress   # noqa: F401
+from app.modules.quizzes.models import Quiz, QuizQuestion, QuizOption, QuizGenerationJob, QuizAttempt, QuizAnswer  # noqa: F401
 # from app.modules.courses.models import Course      # noqa: F401
 
 config = context.config
