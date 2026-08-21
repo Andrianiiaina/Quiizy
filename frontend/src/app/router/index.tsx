@@ -1,20 +1,35 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { ProtectedRoute } from '@/components/common/ProtectedRoute'
+import { AdminRoute } from '@/components/common/AdminRoute'
+import { AppLayout } from '@/components/layout/AppLayout'
+import { LoginPage } from '@/features/auth/pages/LoginPage'
+import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 
-function HomePage() {
+function Dashboard() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50">
-      <h1 className="text-5xl font-bold tracking-tight text-gray-900">LMS</h1>
-      <p className="text-lg text-gray-500">Plateforme e-learning multi-utilisateur</p>
-      <span className="rounded-full bg-blue-100 px-4 py-1 text-sm font-medium text-blue-700">
-        Phase 1 — Skeleton
-      </span>
+    <div className="rounded-lg border bg-white p-8 text-center">
+      <h2 className="text-2xl font-bold text-gray-900">Tableau de bord</h2>
+      <p className="mt-2 text-gray-500">Phase 2 — Authentification opérationnelle ✓</p>
     </div>
   )
 }
 
 export const router = createBrowserRouter([
+  { path: '/login',    element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
+
   {
-    path: '/',
-    element: <HomePage />,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true,        element: <Navigate to="/dashboard" replace /> },
+          { path: '/dashboard', element: <Dashboard /> },
+        ],
+      },
+    ],
   },
+
+  { path: '*', element: <Navigate to="/" replace /> },
 ])

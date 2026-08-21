@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.config import settings
 from app.core.database import Base
+from app.modules.users.models import User, RefreshToken  # noqa: F401
 
-# Importer tous les models ici au fur et à mesure pour qu'Alembic les détecte :
-# from app.modules.users.models import User          # noqa: F401
+# Importer les nouveaux models ici au fur et à mesure :
 # from app.modules.courses.models import Course      # noqa: F401
 
 config = context.config

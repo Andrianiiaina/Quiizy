@@ -1,12 +1,11 @@
 from fastapi import APIRouter
 
-api_router = APIRouter()
+from app.modules.auth.router import router as auth_router
 
-# Les routers des modules seront enregistrés ici au fur et à mesure :
-#
-# from app.modules.auth.router import router as auth_router
-# api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
-#
+api_router = APIRouter()
+api_router.include_router(auth_router, prefix="/auth")
+
+# Les prochains routers seront ajoutés ici :
 # from app.modules.users.router import router as users_router
 # api_router.include_router(users_router, prefix="/users", tags=["users"])
 

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     # App
     DEBUG: bool = False
+    COOKIE_SECURE: bool = False  # True en production (HTTPS)
 
     # CORS — séparé par virgule dans l'env, ex. : "http://localhost,http://localhost:80"
     CORS_ORIGINS: list[str] = ["http://localhost", "http://localhost:80"]
