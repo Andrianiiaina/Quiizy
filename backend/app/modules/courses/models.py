@@ -34,6 +34,11 @@ class Course(Base):
         nullable=True,
         index=True,
     )
+    cover_image_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        sa.ForeignKey("file_assets.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     title: Mapped[str] = mapped_column(sa.String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
     status: Mapped[CourseStatus] = mapped_column(

@@ -18,6 +18,7 @@ class CourseResponse(BaseModel):
     owner_id: uuid.UUID
     category_id: uuid.UUID | None
     category: CategorySummary | None = None
+    cover_image_id: uuid.UUID | None = None
     title: str
     description: str | None
     status: CourseStatus

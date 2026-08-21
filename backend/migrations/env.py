@@ -10,6 +10,8 @@ from app.core.database import Base
 from app.modules.users.models import User, RefreshToken  # noqa: F401
 from app.modules.categories.models import Category        # noqa: F401
 from app.modules.courses.models import Course             # noqa: F401
+from app.modules.files.models import FileAsset            # noqa: F401
+from app.modules.contents.models import CourseContent     # noqa: F401
 
 # Importer les nouveaux models ici au fur et à mesure :
 # from app.modules.courses.models import Course      # noqa: F401

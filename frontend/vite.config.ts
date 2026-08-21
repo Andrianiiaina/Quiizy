@@ -1,5 +1,4 @@
 /// <reference types="vitest" />
-import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -8,14 +7,14 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': new URL('./src', import.meta.url).pathname,
     },
   },
 
   // Proxy pour le développement local (npm run dev)
   // En Docker, c'est nginx qui gère le proxy — cette config ne s'applique pas.
   server: {
-    port: 5173,
+    port: 5175,
     host: true,
     proxy: {
       '/api': {

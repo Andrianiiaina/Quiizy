@@ -30,7 +30,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://lms:lms_dev_password@postgres:5432/lms}
       SECRET_KEY: ${SECRET_KEY:-change-me-dev-only-not-for-production}
       DEBUG: ${DEBUG:-false}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:80}
+      CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost","http://localhost:80"]}'
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,7 +57,7 @@ services:
     networks:
       - lms_net
     ports:
-      - "80:80"
+      - "8080:80"
     restart: unless-stopped
 
 volumes:

@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useCategories } from '@/features/categories/hooks/useCategories'
-import type { Course } from '@/types/course'
 
 const schema = z.object({
   title: z.string().min(1, 'Titre requis').max(255),
