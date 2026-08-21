@@ -51,3 +51,14 @@ async def clean_users() -> None:  # type: ignore[return]
         await session.execute(sa.text("DELETE FROM refresh_tokens"))
         await session.execute(sa.text("DELETE FROM users"))
         await session.commit()
+
+
+@pytest.fixture
+async def clean_db() -> None:  # type: ignore[return]
+    """Purge toutes les tables métier (respecte l'ordre des FK)."""
+    yield
+    async with _TestSession() as session:
+        await session.execute(sa.text("DELETE FROM courses"))
+        await session.execute(sa.text("DELETE FROM categories"))
+        await session.execute(sa.text("DELETE FROM users"))  # cascade → refresh_tokens
+        await session.commit()
