@@ -18,6 +18,10 @@ class UserRepository:
         result = await self._db.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
+    async def get_all(self) -> list[User]:
+        result = await self._db.execute(select(User).order_by(User.created_at.desc()))
+        return list(result.scalars().all())
+
     async def create(
         self,
         *,

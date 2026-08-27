@@ -54,6 +54,21 @@ async def clean_users() -> None:  # type: ignore[return]
 
 
 @pytest.fixture
+async def clean_all() -> None:  # type: ignore[return]
+    """Purge toutes les tables dans l'ordre correct (TRUNCATE sans CASCADE grâce à la liste complète)."""
+    yield
+    async with _TestSession() as session:
+        await session.execute(sa.text(
+            "TRUNCATE TABLE "
+            "quiz_answers, quiz_attempts, content_progress, enrollments, assignments, "
+            "quiz_generation_jobs, quiz_options, quiz_questions, quizzes, "
+            "learning_path_courses, learning_paths, course_contents, file_assets, "
+            "courses, categories, refresh_tokens, users"
+        ))
+        await session.commit()
+
+
+@pytest.fixture
 async def clean_db() -> None:  # type: ignore[return]
     """Purge toutes les tables métier (respecte l'ordre des FK)."""
     yield

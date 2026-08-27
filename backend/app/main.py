@@ -1,14 +1,55 @@
 import logging
+import time
+from collections import defaultdict
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import JSONResponse as StarletteJSONResponse
 
 from app.core.config import settings
 from app.core.exceptions import AppException, app_exception_handler
 from app.core.logging import setup_logging
 from app.api.v1.router import api_router
+
+
+class _SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: StarletteRequest, call_next):  # type: ignore[override]
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        if settings.COOKIE_SECURE:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
+
+class _LoginRateLimitMiddleware(BaseHTTPMiddleware):
+    """In-memory brute-force protection for POST /api/v1/auth/login — 10 req/60 s per IP."""
+
+    _LIMIT = 10
+    _WINDOW = 60  # seconds
+
+    def __init__(self, app) -> None:  # type: ignore[override]
+        super().__init__(app)
+        self._attempts: dict[str, list[float]] = defaultdict(list)
+
+    async def dispatch(self, request: StarletteRequest, call_next):  # type: ignore[override]
+        if request.method == "POST" and request.url.path == "/api/v1/auth/login":
+            ip = (request.client.host if request.client else None) or "unknown"
+            now = time.time()
+            cutoff = now - self._WINDOW
+            self._attempts[ip] = [t for t in self._attempts[ip] if t > cutoff]
+            if len(self._attempts[ip]) >= self._LIMIT:
+                return StarletteJSONResponse(
+                    status_code=429,
+                    content={"code": "RATE_LIMIT_EXCEEDED", "message": "Too many login attempts. Please try again later."},
+                )
+            self._attempts[ip].append(now)
+        return await call_next(request)
 
 setup_logging(debug=settings.DEBUG)
 logger = logging.getLogger("lms")
@@ -32,6 +73,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(_LoginRateLimitMiddleware)
+app.add_middleware(_SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
