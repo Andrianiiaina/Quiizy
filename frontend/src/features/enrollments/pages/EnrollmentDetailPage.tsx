@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
-import { useEnrollment, useEnrollmentProgress, useMarkContentCompleted, useCourseQuiz } from '@/features/lms/hooks'
+import { useEnrollment, useEnrollmentProgress, useMarkContentCompleted } from '@/features/enrollments/hooks'
+import { useCourseQuiz } from '@/features/quizzes/hooks'
 import { useCourse } from '@/features/courses/hooks/useCourses'
 import { useCourseContents } from '@/features/contents/hooks/useContents'
 import type { ContentProgress } from '@/types/lms'

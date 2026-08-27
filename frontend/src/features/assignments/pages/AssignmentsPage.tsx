@@ -1,18 +1,14 @@
 import { useState } from 'react'
-import { assignmentsApi } from '@/features/lms/api'
+import { useAssignments, useCreateAssignment, useCancelAssignment } from '@/features/assignments/hooks'
+import { useLPs } from '@/features/learning-paths/hooks'
 import { useCourses } from '@/features/courses/hooks/useCourses'
-import { useLPs } from '@/features/lms/hooks'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export function AssignmentsPage() {
-  const qc = useQueryClient()
   const { data: courses } = useCourses()
   const { data: lps } = useLPs()
-  const { data: assignments = [], isLoading } = useQuery({ queryKey: ['assignments'], queryFn: assignmentsApi.list })
-  const { mutateAsync: createAssignment, isPending } = useMutation({
-    mutationFn: assignmentsApi.create,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['assignments'] }),
-  })
+  const { data: assignments = [], isLoading } = useAssignments()
+  const { mutateAsync: createAssignment, isPending } = useCreateAssignment()
+  const { mutateAsync: cancelAssignment } = useCancelAssignment()
 
   const [form, setForm] = useState({ user_id: '', target_type: 'COURSE', target_id: '', due_date: '' })
   const [error, setError] = useState('')
@@ -78,10 +74,17 @@ export function AssignmentsPage() {
             {assignments.map(a => (
               <div key={a.id} className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 text-sm">
                 <div>
-                  <span className="font-medium">{a.target_type}</span> → <span className="font-mono text-xs">{a.target_id.slice(0, 8)}…</span>
-                  {a.due_date && <span className="ml-2 text-gray-500">Échéance : {new Date(a.due_date).toLocaleDateString('fr-FR')}</span>}
+                  <p className="font-medium text-gray-900">{a.target_type} — {a.target_id.slice(0, 8)}…</p>
+                  <p className="text-xs text-gray-500">Utilisateur : {a.user_id.slice(0, 8)}… · Statut : {a.status}</p>
+                  {a.due_date && <p className="text-xs text-gray-500">Échéance : {new Date(a.due_date).toLocaleDateString('fr-FR')}</p>}
                 </div>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${a.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{a.status}</span>
+                <button
+                  onClick={() => cancelAssignment(a.id)}
+                  disabled={a.status === 'CANCELLED'}
+                  className="text-xs text-red-500 hover:underline disabled:opacity-40"
+                >
+                  Annuler
+                </button>
               </div>
             ))}
           </div>

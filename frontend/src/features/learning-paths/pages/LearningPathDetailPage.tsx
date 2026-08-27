@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useLP, useLPCourses, usePublishLP } from '@/features/lms/hooks'
+import { useLP, useLPCourses, usePublishLP, useDeleteLP } from '@/features/learning-paths/hooks'
+import { lpApi } from '@/features/learning-paths/api'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { lpApi } from '@/features/lms/api'
 import { useCourses } from '@/features/courses/hooks/useCourses'
-import { useQueryClient, useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import type { LPCourseItem } from '@/types/lms'
 
 export function LearningPathDetailPage() {
@@ -16,12 +16,8 @@ export function LearningPathDetailPage() {
   const { user } = useAuth()
   const qc = useQueryClient()
   const { mutateAsync: publishLP, isPending: isPublishing } = usePublishLP(id)
+  const { mutateAsync: deleteLP } = useDeleteLP(id)
   const [addingCourseId, setAddingCourseId] = useState<string>('')
-
-  const { mutateAsync: deleteLP } = useMutation({
-    mutationFn: () => lpApi.delete(id),
-    onSuccess: () => { navigate('/learning-paths', { replace: true }) },
-  })
 
   if (isLoading) return <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" /></div>
   if (!lp) return <p className="text-gray-500">Parcours introuvable.</p>
@@ -49,7 +45,12 @@ export function LearningPathDetailPage() {
             {lp.status === 'DRAFT' && (
               <button onClick={() => publishLP()} disabled={isPublishing} className="rounded-md bg-green-600 px-3 py-1.5 text-sm text-white hover:bg-green-700 disabled:opacity-50">Publier</button>
             )}
-            <button onClick={() => { if (confirm('Supprimer ?')) deleteLP() }} className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">Supprimer</button>
+            <button
+              onClick={() => { if (confirm('Supprimer ?')) deleteLP().then(() => navigate('/learning-paths', { replace: true })) }}
+              className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+            >
+              Supprimer
+            </button>
           </div>
         )}
       </div>
@@ -64,7 +65,12 @@ export function LearningPathDetailPage() {
                 #{i + 1} — <Link to={`/courses/${lpc.course_id}`} className="text-blue-600 hover:underline">{lpc.course_id.slice(0, 8)}…</Link>
               </span>
               {canEdit && (
-                <button onClick={() => { lpApi.removeCourse(id, lpc.course_id).then(() => qc.invalidateQueries({ queryKey: ['lps', id, 'courses'] })) }} className="text-xs text-red-500 hover:underline">Retirer</button>
+                <button
+                  onClick={() => lpApi.removeCourse(id, lpc.course_id).then(() => qc.invalidateQueries({ queryKey: ['lps', id, 'courses'] }))}
+                  className="text-xs text-red-500 hover:underline"
+                >
+                  Retirer
+                </button>
               )}
             </div>
           ))}

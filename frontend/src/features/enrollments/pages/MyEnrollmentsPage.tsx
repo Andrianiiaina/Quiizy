@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useEnrollments } from '@/features/lms/hooks'
+import { useEnrollments } from '@/features/enrollments/hooks'
+import type { Enrollment } from '@/types/lms'
 
 const STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: 'Non démarré',
@@ -17,7 +18,7 @@ const STATUS_STYLE: Record<string, string> = {
 }
 
 export function MyEnrollmentsPage() {
-  const { data: enrollments = [] as import('@/types/lms').Enrollment[], isLoading } = useEnrollments()
+  const { data: enrollments = [] as Enrollment[], isLoading } = useEnrollments()
 
   return (
     <div>

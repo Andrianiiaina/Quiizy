@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useLPs } from '@/features/lms/hooks'
+import { useLPs } from '@/features/learning-paths/hooks'
 import type { LearningPath } from '@/types/lms'
 
 const STATUS_STYLE: Record<string, string> = {

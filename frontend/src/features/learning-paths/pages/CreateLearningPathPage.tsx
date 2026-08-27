@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useCreateLP } from '@/features/lms/hooks'
+import { useCreateLP } from '@/features/learning-paths/hooks'
 
 const schema = z.object({
   title: z.string().min(1, 'Titre requis').max(255),

@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useCourseContents, useDeleteContent, useReorderContents } from '@/features/contents/hooks/useContents'
 import { ContentCard } from '@/features/contents/components/ContentCard'
 import { AddContentForm } from '@/features/contents/components/AddContentForm'
-import { useGenerateQuiz, useGenerationJob, useCourseQuiz } from '@/features/lms/hooks'
+import { useGenerateQuiz, useGenerationJob, useCourseQuiz } from '@/features/quizzes/hooks'
 
 export function CourseDetailPage() {
   const { id = '' } = useParams<{ id: string }>()

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
-import { quizzesApi } from '@/features/lms/api'
+import { quizzesApi } from '@/features/quizzes/api'
 import type { AttemptResult, QuizAttempt } from '@/types/lms'
 
 export function QuizAttemptPage() {
@@ -95,7 +95,14 @@ export function QuizAttemptPage() {
             <div className="mt-4 space-y-2">
               {q.options.map(opt => (
                 <label key={opt.id} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 hover:bg-gray-50 ${answers[q.id] === opt.id ? 'border-blue-500 bg-blue-50' : ''}`}>
-                  <input type="radio" name={q.id} value={opt.id} checked={answers[q.id] === opt.id} onChange={() => setAnswers(prev => ({ ...prev, [q.id]: opt.id }))} className="h-4 w-4 text-blue-600" />
+                  <input
+                    type="radio"
+                    name={q.id}
+                    value={opt.id}
+                    checked={answers[q.id] === opt.id}
+                    onChange={() => setAnswers(prev => ({ ...prev, [q.id]: opt.id }))}
+                    className="h-4 w-4 text-blue-600"
+                  />
                   <span className="text-sm text-gray-700">{opt.text}</span>
                 </label>
               ))}
@@ -103,9 +110,15 @@ export function QuizAttemptPage() {
           </div>
         ))}
       </div>
-      <button onClick={handleComplete} disabled={isSubmitting || answered < total} className="w-full rounded-md bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-        {isSubmitting ? 'Soumission…' : answered < total ? `Répondez à toutes les questions (${total - answered} restantes)` : 'Terminer le quiz'}
-      </button>
+      <div className="flex justify-end">
+        <button
+          onClick={handleComplete}
+          disabled={isSubmitting || answered < total}
+          className="rounded-md bg-purple-600 px-6 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+        >
+          {isSubmitting ? 'Envoi…' : `Terminer (${answered}/${total})`}
+        </button>
+      </div>
     </div>
   )
 }
