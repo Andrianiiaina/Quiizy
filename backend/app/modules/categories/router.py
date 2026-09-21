@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.exceptions import AppException, NotFoundError
+from app.core.exceptions import NotFoundError
 from app.modules.auth.dependencies import get_current_user, require_admin
 from app.modules.categories.repository import CategoryRepository
 from app.modules.categories.schemas import (
@@ -12,6 +12,7 @@ from app.modules.categories.schemas import (
     CreateCategoryRequest,
     UpdateCategoryRequest,
 )
+from app.modules.categories.service import CategoryService
 from app.modules.users.models import User
 
 router = APIRouter(tags=["categories"])
@@ -30,17 +31,11 @@ async def list_categories(
 async def create_category(
     body: CreateCategoryRequest,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(get_current_user),
 ) -> CategoryResponse:
-    repo = CategoryRepository(db)
-    if await repo.get_by_name(body.name):
-        raise AppException(
-            code="CATEGORY_ALREADY_EXISTS",
-            message=f"Category '{body.name}' already exists.",
-            status_code=409,
-        )
-    cat = await repo.create(name=body.name, description=body.description)
-    await db.commit()
+    # Toute personne authentifiée peut créer une catégorie (ex. depuis le formulaire de cours) —
+    # seules la modification et la suppression restent réservées aux ADMIN.
+    cat = await CategoryService(db).create(name=body.name, description=body.description)
     return CategoryResponse.model_validate(cat)
 
 
@@ -68,16 +63,7 @@ async def update_category(
     if not cat:
         raise NotFoundError("Category", str(category_id))
     data = body.model_dump(exclude_unset=True)
-    if "name" in data and data["name"]:
-        existing = await repo.get_by_name(data["name"])
-        if existing and existing.id != cat.id:
-            raise AppException(
-                code="CATEGORY_ALREADY_EXISTS",
-                message=f"Category '{data['name']}' already exists.",
-                status_code=409,
-            )
-    cat = await repo.update(cat, data=data)
-    await db.commit()
+    cat = await CategoryService(db).update(cat, data=data)
     return CategoryResponse.model_validate(cat)
 
 
@@ -91,5 +77,5 @@ async def delete_category(
     cat = await repo.get_by_id(category_id)
     if not cat:
         raise NotFoundError("Category", str(category_id))
-    await repo.delete(cat)
-    await db.commit()
+    await CategoryService(db).delete(cat)
+

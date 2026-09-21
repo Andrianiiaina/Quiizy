@@ -4,6 +4,7 @@ import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { CoursesListPage } from '@/features/courses/pages/CoursesListPage'
 import { CreateCoursePage } from '@/features/courses/pages/CreateCoursePage'
 import { CourseDetailPage } from '@/features/courses/pages/CourseDetailPage'
@@ -15,6 +16,7 @@ import { MyEnrollmentsPage } from '@/features/enrollments/pages/MyEnrollmentsPag
 import { EnrollmentDetailPage } from '@/features/enrollments/pages/EnrollmentDetailPage'
 import { AssignmentsPage } from '@/features/assignments/pages/AssignmentsPage'
 import { QuizAttemptPage } from '@/features/quizzes/pages/QuizAttemptPage'
+import { UsersListPage } from '@/features/users/pages/UsersListPage'
 
 export const router = createBrowserRouter([
   { path: '/login',    element: <LoginPage /> },
@@ -26,7 +28,8 @@ export const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { index: true,               element: <Navigate to="/courses" replace /> },
+          { index: true,               element: <Navigate to="/dashboard" replace /> },
+          { path: '/dashboard',        element: <DashboardPage /> },
           { path: '/courses',          element: <CoursesListPage /> },
           { path: '/courses/new',      element: <CreateCoursePage /> },
           { path: '/courses/:id',      element: <CourseDetailPage /> },
@@ -41,6 +44,7 @@ export const router = createBrowserRouter([
             element: <AdminRoute />,
             children: [
               { path: '/admin/assignments', element: <AssignmentsPage /> },
+              { path: '/admin/users',       element: <UsersListPage /> },
             ],
           },
         ],
@@ -50,3 +54,4 @@ export const router = createBrowserRouter([
 
   { path: '*', element: <Navigate to="/" replace /> },
 ])
+

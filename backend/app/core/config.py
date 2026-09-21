@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     COOKIE_SECURE: bool = False  # True en production (HTTPS)
 
+    # Rate limiting — protection brute-force sur POST /auth/login
+    LOGIN_RATE_LIMIT_MAX_ATTEMPTS: int = 10
+    LOGIN_RATE_LIMIT_WINDOW_SECONDS: int = 60
+
     # CORS — séparé par virgule dans l'env, ex. : "http://localhost,http://localhost:80"
     CORS_ORIGINS: list[str] = ["http://localhost", "http://localhost:80"]
 

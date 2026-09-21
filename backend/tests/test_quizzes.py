@@ -104,7 +104,6 @@ class TestQuizAttempt:
     ) -> None:
         """Answering the same question twice in an attempt must return 409."""
         from app.modules.quizzes.generation import run_generation_job, trigger_generation
-        from app.core.database import get_db
 
         await _register(auth_client, _ADMIN)
         await _login(auth_client, _ADMIN)

@@ -2,10 +2,14 @@ import sqlalchemy as sa
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 from app.core.database import get_db
 from app.main import app
+
+# Les tests exercent /auth/login bien plus qu'un scénario de brute-force réel.
+settings.LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 100_000
 
 # ── Client léger (sans DB) pour les tests unitaires ───────────────────────────
 
@@ -19,7 +23,7 @@ async def client() -> AsyncClient:  # type: ignore[return]
 
 # ── Fixtures d'intégration — nécessitent PostgreSQL ───────────────────────────
 
-_test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
+_test_engine = create_async_engine(settings.DATABASE_URL, echo=False, poolclass=NullPool)
 _TestSession = async_sessionmaker(_test_engine, expire_on_commit=False)
 
 

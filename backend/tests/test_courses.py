@@ -36,9 +36,30 @@ class TestCategoryAdmin:
         assert r.status_code == 201
         assert r.json()["name"] == "Python"
 
-    async def test_user_cannot_create_category(self, auth_client: AsyncClient) -> None:
+    async def test_user_can_create_category(self, auth_client: AsyncClient) -> None:
         await _login(auth_client, _USER_A)
         r = await auth_client.post("/api/v1/categories", json={"name": "Dev"})
+        assert r.status_code == 201
+        assert r.json()["name"] == "Dev"
+
+    async def test_user_cannot_update_category(self, auth_client: AsyncClient, db_session: AsyncSession) -> None:
+        await _login(auth_client, _ADMIN)
+        await _promote_admin(db_session, _ADMIN["email"])
+        cat_id = (await auth_client.post("/api/v1/categories", json={"name": "ToEdit"})).json()["id"]
+        await _logout(auth_client)
+
+        await _login(auth_client, _USER_A)
+        r = await auth_client.patch(f"/api/v1/categories/{cat_id}", json={"name": "Hacked"})
+        assert r.status_code == 403
+
+    async def test_user_cannot_delete_category(self, auth_client: AsyncClient, db_session: AsyncSession) -> None:
+        await _login(auth_client, _ADMIN)
+        await _promote_admin(db_session, _ADMIN["email"])
+        cat_id = (await auth_client.post("/api/v1/categories", json={"name": "ToDelete"})).json()["id"]
+        await _logout(auth_client)
+
+        await _login(auth_client, _USER_A)
+        r = await auth_client.delete(f"/api/v1/categories/{cat_id}")
         assert r.status_code == 403
 
     async def test_duplicate_category_rejected(self, auth_client: AsyncClient, db_session: AsyncSession) -> None:
@@ -78,8 +99,7 @@ class TestCourseOwnership:
 
         await _login(auth_client, _USER_B)
         r = await auth_client.patch(f"/api/v1/courses/{course_id}", json={"title": "Hacked"})
-        assert r.status_code == 403
-        assert r.json()["code"] == "COURSE_ACCESS_DENIED"
+        assert r.status_code == 404  # DRAFT non visible pour un non-owner — opacité délibérée
 
     async def test_user_b_cannot_delete_user_a_course(self, auth_client: AsyncClient) -> None:
         await _login(auth_client, _USER_A)
@@ -89,7 +109,7 @@ class TestCourseOwnership:
 
         await _login(auth_client, _USER_B)
         r = await auth_client.delete(f"/api/v1/courses/{course_id}")
-        assert r.status_code == 403
+        assert r.status_code == 404  # DRAFT non visible pour un non-owner — opacité délibérée
 
     async def test_admin_can_edit_any_course(self, auth_client: AsyncClient, db_session: AsyncSession) -> None:
         await _login(auth_client, _USER_A)

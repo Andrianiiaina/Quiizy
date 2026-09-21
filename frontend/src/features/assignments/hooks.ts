@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { assignmentsApi } from './api'
 import type { Assignment } from '@/types/lms'
 
-export function useAssignments() {
+export function useAssignments(options?: { enabled?: boolean }) {
   return useQuery<Assignment[]>({
     queryKey: ['assignments'],
     queryFn: assignmentsApi.list,
+    enabled: options?.enabled ?? true,
   })
 }
 

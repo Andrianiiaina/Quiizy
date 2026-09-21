@@ -10,6 +10,18 @@ services:
     environment:
       DEBUG: "true"
 
+  frontend:
+    build:
+      target: deps
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "8081:5175"   # 8080 était bloqué par un processus fantôme au niveau du démon Docker
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+
   postgres:
     ports:
       - "5432:5432"   # expose postgres pour les outils DB locaux (DBeaver, psql, etc.)

@@ -11,18 +11,20 @@ export default defineConfig({
     },
   },
 
-  // Proxy pour le développement local (npm run dev)
-  // En Docker, c'est nginx qui gère le proxy — cette config ne s'applique pas.
+  // Proxy vers le backend — cible surchargeable via VITE_PROXY_TARGET :
+  // "http://localhost:8000" en dev local (npm run dev sur l'hôte),
+  // "http://backend:8000" en dev Docker (voir docker-compose.override.yml).
+  // En build de production, c'est nginx qui gère le proxy — cette config ne s'applique pas.
   server: {
     port: 5175,
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8000',
         changeOrigin: true,
       },
       '/health': {
-        target: 'http://localhost:8000',
+        target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8000',
         changeOrigin: true,
       },
     },

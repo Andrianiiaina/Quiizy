@@ -1,8 +1,8 @@
 import logging
 import time
 from collections import defaultdict
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,10 +10,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
 from starlette.responses import JSONResponse as StarletteJSONResponse
 
+from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import AppException, app_exception_handler
 from app.core.logging import setup_logging
-from app.api.v1.router import api_router
 
 
 class _SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -28,10 +28,7 @@ class _SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class _LoginRateLimitMiddleware(BaseHTTPMiddleware):
-    """In-memory brute-force protection for POST /api/v1/auth/login — 10 req/60 s per IP."""
-
-    _LIMIT = 10
-    _WINDOW = 60  # seconds
+    """In-memory brute-force protection for POST /api/v1/auth/login."""
 
     def __init__(self, app) -> None:  # type: ignore[override]
         super().__init__(app)
@@ -41,9 +38,9 @@ class _LoginRateLimitMiddleware(BaseHTTPMiddleware):
         if request.method == "POST" and request.url.path == "/api/v1/auth/login":
             ip = (request.client.host if request.client else None) or "unknown"
             now = time.time()
-            cutoff = now - self._WINDOW
+            cutoff = now - settings.LOGIN_RATE_LIMIT_WINDOW_SECONDS
             self._attempts[ip] = [t for t in self._attempts[ip] if t > cutoff]
-            if len(self._attempts[ip]) >= self._LIMIT:
+            if len(self._attempts[ip]) >= settings.LOGIN_RATE_LIMIT_MAX_ATTEMPTS:
                 return StarletteJSONResponse(
                     status_code=429,
                     content={"code": "RATE_LIMIT_EXCEEDED", "message": "Too many login attempts. Please try again later."},

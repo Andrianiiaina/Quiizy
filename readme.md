@@ -527,6 +527,9 @@ development · test · production
 
 Fichier `.env.example` fourni avec toutes les variables documentées.
 
+- **Développement** : `docker compose up --build` (applique automatiquement `docker-compose.override.yml` — reload, port Postgres exposé)
+- **Production** : `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` (`COOKIE_SECURE=true`, pas de reload, Postgres non exposé)
+
 ---
 
 ## Tests

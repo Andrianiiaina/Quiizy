@@ -1,0 +1,14 @@
+# Surcharges de production — usage explicite (ne pas combiner avec docker-compose.override.yml) :
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  backend:
+    environment:
+      DEBUG: "false"
+      COOKIE_SECURE: "true"
+    restart: always
+
+  frontend:
+    restart: always
+
+  postgres:
+    restart: always
